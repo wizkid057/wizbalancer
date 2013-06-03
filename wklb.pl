@@ -97,6 +97,12 @@ foreach $lb (@lb) {
 	$f .= $t;
 }
 
+print cool_header("IPSETS");
+
+foreach $l (@l) {
+	print $IPSET." create $l hash:ip netmask 28 maxelem 65536 hashsize 2048 timeout 43200\n";
+}
+print "\n";
 $f = $h.$pr."\n\n".$f;
 
 @p = split(/\n/,$f);
@@ -108,16 +114,6 @@ foreach $p (@p) {
 	}
 	print "\n";
 }
-
-print "\n";
-print cool_header("IPSETS");
-
-foreach $l (@l) {
-
-	print $IPSET." create $l hash:ip netmask 28 maxelem 65536 hashsize 2048 timeout 43200\n";
-
-}
-
 print "\n# Done\n\n";
 
 sub cool_header {
