@@ -20,7 +20,10 @@ if ( ! -e $config ) {
 
 open(X,"<$config");
 
-print cool_header("Generated load balancer from config file $config");
+( $ss, $mm, $hh, $mday, $mon, $year, $wday, $yday, $isdst ) = localtime();
+$date = sprintf( "%d-%02d-%02d %02d:%02d:%02d", ( $year += 1900, $mon += 1, $mday, $hh, $mm, $ss ) );
+
+print cool_header("iptables load balancing script\nby wizkid057\n\nGenerated load balancer from config file $config\n$date");
 
 while (<X>) {
 	chomp($_);
@@ -120,11 +123,26 @@ print "\n# Done\n\n";
 sub cool_header {
 	my $s = "";
 	my ($lb) = @_;
-	for($i=0;$i<length($lb)+6;$i++) { 
+
+	my @lines = split(/\n/,$lb);
+	$longest = 0;
+	my $line = "";
+	foreach $line (@lines) {
+		if (length($line) > $longest) { $longest = length($line); }
+	}
+
+	for($i=0;$i<$longest+6;$i++) { 
 		$s .= "#"; 
 	}
-	$s .= "\n## $lb ##\n"; 
-	for($i=0;$i<length($lb)+6;$i++) { 
+	$s .= "\n";
+
+	foreach $line (@lines) {
+		if (length($line) < $longest) {
+			for($i=length($line);$i<$longest;$i++) { $line.=" "; }
+		}
+		$s .= "## $line ##\n";
+	}
+	for($i=0;$i<$longest+6;$i++) { 
 		$s .= "#"; 
 	} 
 	$s .= "\n\n";
