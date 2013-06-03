@@ -5,6 +5,9 @@
 
 ($config) = @ARGV;
 
+$IPSET = "/usr/sbin/ipset";
+$IPTABLES = "/sbin/iptables";
+
 if (!$config) {
 	print "Must specify config file on command line\n";
 	exit;
@@ -17,7 +20,7 @@ if ( ! -e $config ) {
 
 open(X,"<$config");
 
-print "# Generated load balancer from config file $config\n";
+print cool_header("Generated load balancer from config file $config");
 
 while (<X>) {
 	chomp($_);
@@ -35,11 +38,20 @@ while (<X>) {
 
 print "\n";
 
-
+$h = cool_header("CHAIN DEFS");
 foreach $lb (@lb) {
+	push(@c,"LOAD_BALANCE_".$lb);
+	push(@c,"LOAD_BALANCE_".$lb."_CLASSIFY");
 	for($i=0;$i<$lbcount{$lb};$i++) {
+		push(@c,"LB_".$lb."_CLASSIFY_".chr(ord('A')+$i));
+		push(@l,"lb_".$lb."_".chr(ord('A')+$i));
 	}
 }
+foreach $c (@c) {
+	$h.="-N $c\n";
+	$h.="-F $c\n";
+}
+$h.="\n";
 
 $pr = cool_header("PREROUTING");
 $pr .= "-A PREROUTING ! -i lo -j LOAD_BALANCE\n";
@@ -82,9 +94,28 @@ foreach $lb (@lb) {
 	$f .= $t;
 }
 
-$f = $pr."\n\n".$f;
-print $f;
-print "# End generated config\n";
+$f = $h.$pr."\n\n".$f;
+
+@p = split(/\n/,$f);
+foreach $p (@p) {
+	if (substr($p,0,1) eq "-") {
+		print $IPTABLES." ".$p;
+	} else {
+		print $p;
+	}
+	print "\n";
+}
+
+print "\n";
+print cool_header("IPSETS");
+
+foreach $l (@l) {
+
+	print $IPSET." create $l hash:ip netmask 28 maxelem 65536 hashsize 2048 timeout 43200\n";
+
+}
+
+print "\n# Done\n\n";
 
 sub cool_header {
 	my $s = "";
