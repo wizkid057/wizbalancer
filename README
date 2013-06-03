@@ -6,10 +6,39 @@ iptables for simple load balancing.
 
 It could be easily modified to do DNAT instead of REDIRECT and such.
 
-Code is ugly, but it does the job.
+Code is ugly, I literally wrote it in under an hour, and it does the job.
+
+See output-example.txt for an idea of what this does.
+
+******************
+*** Basic Idea ***
+******************
+
+Basically, you have multiple instances of a service listening on its own port,
+with each being in sequence with the last.
+
+Then you assign an actual public listening port to it and define the data in
+a config file (see config.conf.example).  Then run the script with the config
+file name as the only argument.
+
+Run the output so that all of the commands are executed.
+
+Now iptables should take connections to your listen port and balance it to the
+other local listening ports you're actually listening on.
+
+It will also remember which IPs connected to which instance of your service and
+continue to direct them there, with a timeout of about 12 hours of no activity.
+
+---
+
+It took me a while to figure out how to do this effectively, and I didn't find
+much around the web for details.  So, if anyone else gets some use out of this
+at all, then I'm happy.
 
 Released under GPLv3.
+Please keep my bitcoin donation address in distributed copies in case someone
+does find this useful one day and feel like saying thanks!
 
-Donations to 1Ma3ptdk5wgYgZKZsZLmauG81wmEXZzmVg if you feel like this has been useful!
+Donations to 1Ma3ptdk5wgYgZKZsZLmauG81wmEXZzmVg - Thanks!
 
 -wizkid057
