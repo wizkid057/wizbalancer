@@ -1,0 +1,15 @@
+wizbalancer
+-----------
+
+This is just a little script I whipped up to make rules for using 
+iptables for simple load balancing.
+
+It could be easily modified to do DNAT instead of REDIRECT and such.
+
+Code is ugly, but it does the job.
+
+Released under GPLv3.
+
+Donations to 1Ma3ptdk5wgYgZKZsZLmauG81wmEXZzmVg if you feel like this has been useful!
+
+-wizkid057

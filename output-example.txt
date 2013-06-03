@@ -1,0 +1,134 @@
+##################################################################
+## iptables load balancing script                               ##
+## by wizkid057 - 1Ma3ptdk5wgYgZKZsZLmauG81wmEXZzmVg            ##
+##                                                              ##
+## Generated load balancer from config file config.conf.example ##
+## 2013-06-03 03:40:19                                          ##
+##################################################################
+
+# Service STRATUM with listen ports 3333,3334 and 3 local ports starting at 3337
+# Service GBT with listen ports 9337 and 2 local ports starting at 4937
+# Service GETWORK with listen ports 8337,8444 and 5 local ports starting at 4337
+
+############
+## IPSETS ##
+############
+
+/usr/sbin/ipset create lb_STRATUM_A hash:ip netmask 28 maxelem 65536 hashsize 2048 timeout 43200
+/usr/sbin/ipset create lb_STRATUM_B hash:ip netmask 28 maxelem 65536 hashsize 2048 timeout 43200
+/usr/sbin/ipset create lb_STRATUM_C hash:ip netmask 28 maxelem 65536 hashsize 2048 timeout 43200
+/usr/sbin/ipset create lb_GBT_A hash:ip netmask 28 maxelem 65536 hashsize 2048 timeout 43200
+/usr/sbin/ipset create lb_GBT_B hash:ip netmask 28 maxelem 65536 hashsize 2048 timeout 43200
+/usr/sbin/ipset create lb_GETWORK_A hash:ip netmask 28 maxelem 65536 hashsize 2048 timeout 43200
+/usr/sbin/ipset create lb_GETWORK_B hash:ip netmask 28 maxelem 65536 hashsize 2048 timeout 43200
+/usr/sbin/ipset create lb_GETWORK_C hash:ip netmask 28 maxelem 65536 hashsize 2048 timeout 43200
+/usr/sbin/ipset create lb_GETWORK_D hash:ip netmask 28 maxelem 65536 hashsize 2048 timeout 43200
+/usr/sbin/ipset create lb_GETWORK_E hash:ip netmask 28 maxelem 65536 hashsize 2048 timeout 43200
+
+################
+## CHAIN DEFS ##
+################
+
+/sbin/iptables -N LOAD_BALANCE_STRATUM
+/sbin/iptables -F LOAD_BALANCE_STRATUM
+/sbin/iptables -N LOAD_BALANCE_STRATUM_CLASSIFY
+/sbin/iptables -F LOAD_BALANCE_STRATUM_CLASSIFY
+/sbin/iptables -N LB_STRATUM_CLASSIFY_A
+/sbin/iptables -F LB_STRATUM_CLASSIFY_A
+/sbin/iptables -N LB_STRATUM_CLASSIFY_B
+/sbin/iptables -F LB_STRATUM_CLASSIFY_B
+/sbin/iptables -N LB_STRATUM_CLASSIFY_C
+/sbin/iptables -F LB_STRATUM_CLASSIFY_C
+/sbin/iptables -N LOAD_BALANCE_GBT
+/sbin/iptables -F LOAD_BALANCE_GBT
+/sbin/iptables -N LOAD_BALANCE_GBT_CLASSIFY
+/sbin/iptables -F LOAD_BALANCE_GBT_CLASSIFY
+/sbin/iptables -N LB_GBT_CLASSIFY_A
+/sbin/iptables -F LB_GBT_CLASSIFY_A
+/sbin/iptables -N LB_GBT_CLASSIFY_B
+/sbin/iptables -F LB_GBT_CLASSIFY_B
+/sbin/iptables -N LOAD_BALANCE_GETWORK
+/sbin/iptables -F LOAD_BALANCE_GETWORK
+/sbin/iptables -N LOAD_BALANCE_GETWORK_CLASSIFY
+/sbin/iptables -F LOAD_BALANCE_GETWORK_CLASSIFY
+/sbin/iptables -N LB_GETWORK_CLASSIFY_A
+/sbin/iptables -F LB_GETWORK_CLASSIFY_A
+/sbin/iptables -N LB_GETWORK_CLASSIFY_B
+/sbin/iptables -F LB_GETWORK_CLASSIFY_B
+/sbin/iptables -N LB_GETWORK_CLASSIFY_C
+/sbin/iptables -F LB_GETWORK_CLASSIFY_C
+/sbin/iptables -N LB_GETWORK_CLASSIFY_D
+/sbin/iptables -F LB_GETWORK_CLASSIFY_D
+/sbin/iptables -N LB_GETWORK_CLASSIFY_E
+/sbin/iptables -F LB_GETWORK_CLASSIFY_E
+
+################
+## PREROUTING ##
+################
+
+/sbin/iptables -A PREROUTING ! -i lo -j LOAD_BALANCE
+/sbin/iptables -A LOAD_BALANCE -p tcp -m multiport --dports 3333,3334 -j LOAD_BALANCE_STRATUM
+/sbin/iptables -A LOAD_BALANCE -p tcp --dport 9337 -j LOAD_BALANCE_GBT
+/sbin/iptables -A LOAD_BALANCE -p tcp -m multiport --dports 8337,8444 -j LOAD_BALANCE_GETWORK
+
+
+#############
+## STRATUM ##
+#############
+
+/sbin/iptables -A LOAD_BALANCE_STRATUM -p tcp -m set --match-set lb_STRATUM_A src -j LB_STRATUM_CLASSIFY_A
+/sbin/iptables -A LOAD_BALANCE_STRATUM -p tcp -m set --match-set lb_STRATUM_B src -j LB_STRATUM_CLASSIFY_B
+/sbin/iptables -A LOAD_BALANCE_STRATUM -p tcp -m set --match-set lb_STRATUM_C src -j LB_STRATUM_CLASSIFY_C
+/sbin/iptables -A LOAD_BALANCE_STRATUM -j LB_STRATUM_CLASSIFY
+/sbin/iptables -A LB_STRATUM_CLASSIFY -m statistic --mode random --probability 0.3333333333 -j LB_STRATUM_CLASSIFY_A
+/sbin/iptables -A LB_STRATUM_CLASSIFY -m statistic --mode random --probability 0.5000000000 -j LB_STRATUM_CLASSIFY_B
+/sbin/iptables -A LB_STRATUM_CLASSIFY -j LB_STRATUM_CLASSIFY_C
+/sbin/iptables -A LB_STRATUM_CLASSIFY_A -j SET --add-set lb_STRATUM_A src --exist
+/sbin/iptables -A LB_STRATUM_CLASSIFY_A -p tcp -j REDIRECT --to-ports 3337
+/sbin/iptables -A LB_STRATUM_CLASSIFY_B -j SET --add-set lb_STRATUM_B src --exist
+/sbin/iptables -A LB_STRATUM_CLASSIFY_B -p tcp -j REDIRECT --to-ports 3338
+/sbin/iptables -A LB_STRATUM_CLASSIFY_C -j SET --add-set lb_STRATUM_C src --exist
+/sbin/iptables -A LB_STRATUM_CLASSIFY_C -p tcp -j REDIRECT --to-ports 3339
+
+#########
+## GBT ##
+#########
+
+/sbin/iptables -A LOAD_BALANCE_GBT -p tcp -m set --match-set lb_GBT_A src -j LB_GBT_CLASSIFY_A
+/sbin/iptables -A LOAD_BALANCE_GBT -p tcp -m set --match-set lb_GBT_B src -j LB_GBT_CLASSIFY_B
+/sbin/iptables -A LOAD_BALANCE_GBT -j LB_GBT_CLASSIFY
+/sbin/iptables -A LB_GBT_CLASSIFY -m statistic --mode random --probability 0.5000000000 -j LB_GBT_CLASSIFY_A
+/sbin/iptables -A LB_GBT_CLASSIFY -j LB_GBT_CLASSIFY_B
+/sbin/iptables -A LB_GBT_CLASSIFY_A -j SET --add-set lb_GBT_A src --exist
+/sbin/iptables -A LB_GBT_CLASSIFY_A -p tcp -j REDIRECT --to-ports 4937
+/sbin/iptables -A LB_GBT_CLASSIFY_B -j SET --add-set lb_GBT_B src --exist
+/sbin/iptables -A LB_GBT_CLASSIFY_B -p tcp -j REDIRECT --to-ports 4938
+
+#############
+## GETWORK ##
+#############
+
+/sbin/iptables -A LOAD_BALANCE_GETWORK -p tcp -m set --match-set lb_GETWORK_A src -j LB_GETWORK_CLASSIFY_A
+/sbin/iptables -A LOAD_BALANCE_GETWORK -p tcp -m set --match-set lb_GETWORK_B src -j LB_GETWORK_CLASSIFY_B
+/sbin/iptables -A LOAD_BALANCE_GETWORK -p tcp -m set --match-set lb_GETWORK_C src -j LB_GETWORK_CLASSIFY_C
+/sbin/iptables -A LOAD_BALANCE_GETWORK -p tcp -m set --match-set lb_GETWORK_D src -j LB_GETWORK_CLASSIFY_D
+/sbin/iptables -A LOAD_BALANCE_GETWORK -p tcp -m set --match-set lb_GETWORK_E src -j LB_GETWORK_CLASSIFY_E
+/sbin/iptables -A LOAD_BALANCE_GETWORK -j LB_GETWORK_CLASSIFY
+/sbin/iptables -A LB_GETWORK_CLASSIFY -m statistic --mode random --probability 0.2000000000 -j LB_GETWORK_CLASSIFY_A
+/sbin/iptables -A LB_GETWORK_CLASSIFY -m statistic --mode random --probability 0.2500000000 -j LB_GETWORK_CLASSIFY_B
+/sbin/iptables -A LB_GETWORK_CLASSIFY -m statistic --mode random --probability 0.3333333333 -j LB_GETWORK_CLASSIFY_C
+/sbin/iptables -A LB_GETWORK_CLASSIFY -m statistic --mode random --probability 0.5000000000 -j LB_GETWORK_CLASSIFY_D
+/sbin/iptables -A LB_GETWORK_CLASSIFY -j LB_GETWORK_CLASSIFY_E
+/sbin/iptables -A LB_GETWORK_CLASSIFY_A -j SET --add-set lb_GETWORK_A src --exist
+/sbin/iptables -A LB_GETWORK_CLASSIFY_A -p tcp -j REDIRECT --to-ports 4337
+/sbin/iptables -A LB_GETWORK_CLASSIFY_B -j SET --add-set lb_GETWORK_B src --exist
+/sbin/iptables -A LB_GETWORK_CLASSIFY_B -p tcp -j REDIRECT --to-ports 4338
+/sbin/iptables -A LB_GETWORK_CLASSIFY_C -j SET --add-set lb_GETWORK_C src --exist
+/sbin/iptables -A LB_GETWORK_CLASSIFY_C -p tcp -j REDIRECT --to-ports 4339
+/sbin/iptables -A LB_GETWORK_CLASSIFY_D -j SET --add-set lb_GETWORK_D src --exist
+/sbin/iptables -A LB_GETWORK_CLASSIFY_D -p tcp -j REDIRECT --to-ports 4340
+/sbin/iptables -A LB_GETWORK_CLASSIFY_E -j SET --add-set lb_GETWORK_E src --exist
+/sbin/iptables -A LB_GETWORK_CLASSIFY_E -p tcp -j REDIRECT --to-ports 4341
+
+# Done
+
