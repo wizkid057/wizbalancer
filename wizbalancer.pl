@@ -1,6 +1,26 @@
 #!/usr/bin/perl
 
-# Read config file
+###############################################################################
+#
+#    wizbalancer - iptables poor-man's load balancer - 1Ma3ptdk5wgYgZKZsZLmauG81wmEXZzmVg
+#    Copyright (C) 2013  Jason Hughes <wizkid057@gmail.com>
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+###############################################################################
+
+# config file format
 # NAME:LISTEN_PORT[,LISTEN_PORT[,...]]:START_LOCAL_PORT:COUNT
 
 ($config) = @ARGV;
@@ -23,7 +43,7 @@ open(X,"<$config");
 ( $ss, $mm, $hh, $mday, $mon, $year, $wday, $yday, $isdst ) = localtime();
 $date = sprintf( "%d-%02d-%02d %02d:%02d:%02d", ( $year += 1900, $mon += 1, $mday, $hh, $mm, $ss ) );
 
-print cool_header("iptables load balancing script\nby wizkid057\n\nGenerated load balancer from config file $config\n$date");
+print cool_header("iptables load balancing script\nby wizkid057 - 1Ma3ptdk5wgYgZKZsZLmauG81wmEXZzmVg\n\nGenerated load balancer from config file $config\n$date");
 
 while (<X>) {
 	chomp($_);
